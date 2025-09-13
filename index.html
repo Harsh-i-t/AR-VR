@@ -15,19 +15,19 @@
       </a-assets>
 
         <!-- Camera + Cursor (required for clicks on 3D objects) -->
-        <a-camera position="0 0 0" look-controls="enabled: false">
-            <a-cursor fuse="false" raycaster="objects: .clickable" material="color: white; shader: flat"></a-cursor>
-
-        </a-camera>
+        <a-camera position="0 0 0">
+            <a-cursor fuse="false" raycaster="objects: .clickable"></a-cursor>
+          </a-camera>
 
       <a-entity mindar-image-target="targetIndex: 0">
         <a-gltf-model rotation="0 0 0 " position="0 -0.25 0" scale="0.5 0.5 0.5" src="#model"></a-gltf-model>
         <!-- Button -->
         <a-plane class="clickable" 
+                id="saveContactBtn"
                 position="0 -0.6 0" 
                 width="1" height="0.3" 
                 color="blue" 
-                text="value: Save Contact3; align: center; color: white">
+                text="value: Save Contact; align: center; color: white">
         </a-plane>
       </a-entity>
     </a-scene>
@@ -36,20 +36,21 @@
   
     
     <script>
-        // Wait until scene is loaded
-        document.addEventListener("DOMContentLoaded", () => {
-        const btn = document.querySelector(".clickable");
-    
-        btn.addEventListener("click", () => {
-            // Trigger vCard download
-            const link = document.createElement("a");
-            link.href = "mycontact.vcf";
-            link.download = "mycontact.vcf";
+        // Wait until MindAR has initialized
+        document.querySelector('a-scene').addEventListener('loaded', () => {
+            const btn = document.querySelector("#saveContactBtn");
+
+            // A-Frame click listener
+            btn.addEventListener('click', () => {
+            console.log("Button tapped!"); // Debug: check if this prints on mobile
+            const link = document.createElement('a');
+            link.href = 'mycontact.vcf';
+            link.download = 'mycontact.vcf';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            });
         });
-        });
-    </script>
+    </script>       
   
   </html>
