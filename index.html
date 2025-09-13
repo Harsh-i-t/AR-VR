@@ -38,17 +38,34 @@
     scene.addEventListener('loaded', () => {
       const btn = document.querySelector("#saveContactBtn");
       const status = document.querySelector("#status");
+      const globalStatus = document.querySelector("#globalStatus");
+      const arTarget = document.querySelector('a-entity[mindar-image-target]');
       
-      // Show if button was found
-      if (btn) {
-        status.setAttribute("value", "Button found - Try tapping");
-      } else {
-        status.setAttribute("value", "ERROR: Button not found");
+      // Update global status
+      globalStatus.setAttribute("value", "Scene loaded. Point camera at target image.");
+      
+      // Listen for target found/lost
+      if (arTarget) {
+        arTarget.addEventListener('targetFound', () => {
+          globalStatus.setAttribute("value", "TARGET FOUND! You should see duck + button");
+          if (status) {
+            status.setAttribute("value", "Button ready - Try tapping");
+          }
+        });
+        
+        arTarget.addEventListener('targetLost', () => {
+          globalStatus.setAttribute("value", "Target lost. Point camera at target image.");
+        });
+      }
+      
+      // Only setup button if found
+      if (!btn) {
+        globalStatus.setAttribute("value", "ERROR: Button not found in DOM");
         return;
       }
   
       function triggerDownload() {
-        status.setAttribute("value", "Download triggered!");
+        globalStatus.setAttribute("value", "Download triggered!");
         
         // Visual feedback: change color
         btn.setAttribute("color", "green");
@@ -76,30 +93,20 @@ END:VCARD`;
         // Reset after delay
         setTimeout(() => {
           btn.setAttribute("color", "blue");
-          status.setAttribute("value", "Ready - Tap button again");
+          globalStatus.setAttribute("value", "Ready - Point at target and tap button");
         }, 3000);
       }
 
-      // Try ALL possible events
+      // Button events
       btn.addEventListener('click', (e) => {
-        status.setAttribute("value", "CLICK detected!");
+        globalStatus.setAttribute("value", "CLICK detected!");
         setTimeout(triggerDownload, 500);
       });
 
       btn.addEventListener('touchstart', (e) => {
-        status.setAttribute("value", "TOUCHSTART detected!");
+        globalStatus.setAttribute("value", "TOUCH detected!");
         e.preventDefault();
         setTimeout(triggerDownload, 500);
-      });
-
-      btn.addEventListener('touchend', (e) => {
-        status.setAttribute("value", "TOUCHEND detected!");
-        e.preventDefault();
-      });
-
-      // Test if ANY touch is detected on scene
-      scene.addEventListener('touchstart', (e) => {
-        status.setAttribute("value", "Touch detected on scene");
       });
     });
   </script>
