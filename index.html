@@ -18,109 +18,67 @@
             <a-cursor fuse="true" fuse-timeout="1500" raycaster="objects: .clickable"></a-cursor>
           </a-camera>
 
-      <a-entity mindar-image-target="targetIndex: 0">
-        <a-gltf-model rotation="0 0 0 " position="0 -0.25 0" scale="0.5 0.5 0.5" src="#model"></a-gltf-model>
-        <!-- Button -->
-        <a-plane class="clickable" 
-                id="saveContactBtn"
-                position="0 -0.6 0" 
-                width="1" height="0.3" 
-                color="blue" 
-                text="value: Save Contact; align: center; color: white">
-        </a-plane>
-      </a-entity>
+          <a-entity mindar-image-target="targetIndex: 0">
+            <a-gltf-model rotation="0 0 0" position="0 -0.25 0" scale="0.5 0.5 0.5" src="#model"></a-gltf-model>
+          
+            <!-- Button -->
+            <a-plane id="saveContactBtn"
+                     position="0 -0.6 0"
+                     width="1" height="0.3"
+                     color="blue"
+                     text="value: Save Contact; align: center; color: white"
+                     clickable-button>
+            </a-plane>
+          </a-entity>
     </a-scene>
   </body>
   
   <script>
-    const scene = document.querySelector('a-scene');
-  
-    scene.addEventListener('loaded', () => {
-      const btn = document.querySelector("#saveContactBtn");
-      const globalStatus = document.querySelector("#globalStatus");
-      const arTarget = document.querySelector('a-entity[mindar-image-target]');
-      
-      globalStatus.setAttribute("value", "Scene loaded");
-      
-      // Track if target is visible
-      let targetVisible = false;
-      
-      if (arTarget) {
-        arTarget.addEventListener('targetFound', () => {
-          globalStatus.setAttribute("value", "Target found - tap screen");
-          targetVisible = true;
+    AFRAME.registerComponent('clickable-button', {
+      init: function () {
+        const el = this.el;
+    
+        // Mobile touch listener
+        el.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          triggerDownload(el);
         });
-        
-        arTarget.addEventListener('targetLost', () => {
-          globalStatus.setAttribute("value", "Target lost");
-          targetVisible = false;
+    
+        // Desktop click listener
+        el.addEventListener('click', (e) => {
+          triggerDownload(el);
         });
-      }
-  
-      function triggerDownload() {
-        globalStatus.setAttribute("value", "Download starting...");
-        
-        if (btn) {
-          btn.setAttribute("color", "green");
-        }
-  
-        // Create vCard data
-        const vCardData = `BEGIN:VCARD
-VERSION:3.0
-FN:Your Name
-ORG:Your Company  
-EMAIL:your.email@example.com
-TEL:+1234567890
-END:VCARD`;
-
-        try {
+    
+        function triggerDownload(btn) {
+          // Visual feedback
+          btn.setAttribute('color', 'green');
+    
+          const vCardData = `BEGIN:VCARD
+    VERSION:3.0
+    FN:Your Name
+    ORG:Your Company
+    EMAIL:your.email@example.com
+    TEL:+1234567890
+    END:VCARD`;
+    
           const blob = new Blob([vCardData], { type: 'text/vcard' });
           const url = URL.createObjectURL(blob);
-          
-          const a = document.createElement("a");
+    
+          const a = document.createElement('a');
           a.href = url;
-          a.download = "contact.vcf";
-          a.style.display = 'none';
+          a.download = 'contact.vcf';
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
           URL.revokeObjectURL(url);
-          
-          globalStatus.setAttribute("value", "Download triggered!");
-        } catch (error) {
-          globalStatus.setAttribute("value", "Download failed");
-        }
-  
-        // Reset after delay
-        setTimeout(() => {
-          if (btn) {
-            btn.setAttribute("color", "blue");
-          }
-          globalStatus.setAttribute("value", "Ready - tap screen");
-        }, 3000);
-      }
-
-      // CHANGED: Listen for ANY touch on the entire scene, not just button
-      scene.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        globalStatus.setAttribute("value", "Touch detected!");
-        
-        // Only trigger download if target is visible
-        if (targetVisible) {
+    
+          // Reset button color after 2s
           setTimeout(() => {
-            triggerDownload();
-          }, 100);
+            btn.setAttribute('color', 'blue');
+          }, 2000);
         }
-      });
-
-      // Also try click for desktop
-      scene.addEventListener('click', (e) => {
-        globalStatus.setAttribute("value", "Click detected!");
-        if (targetVisible) {
-          triggerDownload();
-        }
-      });
+      }
     });
-  </script>
+    </script>
   
   </html>
