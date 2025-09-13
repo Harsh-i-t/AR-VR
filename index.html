@@ -35,22 +35,47 @@
   
   
     
-    <script>
-        // Wait until MindAR has initialized
-        document.querySelector('a-scene').addEventListener('loaded', () => {
-            const btn = document.querySelector("#saveContactBtn");
-
-            // A-Frame click listener
-            btn.addEventListener('click', () => {
-            console.log("Button tapped!"); // Debug: check if this prints on mobile
-            const link = document.createElement('a');
-            link.href = 'mycontact.vcf';
-            link.download = 'mycontact.vcf';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            });
-        });
-    </script>       
+  <script>
+    const scene = document.querySelector('a-scene');
+  
+    scene.addEventListener('loaded', () => {
+      const btn = document.querySelector("#saveContactBtn");
+  
+      function triggerDownload() {
+        // Visual feedback: change color
+        btn.setAttribute("color", "green");
+  
+        // Optional: small scale animation
+        btn.setAttribute("animation", "property: scale; to: 1.2 1.2 1; dur: 100; dir: alternate; loop: 1");
+  
+        // Create temporary download link
+        const a = document.createElement("a");
+        a.href = "mycontact.vcf";
+        a.download = "mycontact.vcf";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+  
+        // Reset color after short delay
+        setTimeout(() => {
+          btn.setAttribute("color", "blue");
+        }, 200);
+      }
+  
+      // Click event for desktop
+      btn.addEventListener('click', () => {
+        console.log("Button tapped!");
+        triggerDownload();
+      });
+  
+      // Touch event for mobile
+      btn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        console.log("Touch detected!");
+        triggerDownload();
+      });
+    });
+  </script>
+  
   
   </html>
