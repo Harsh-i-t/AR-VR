@@ -63,6 +63,76 @@
 
       // Get the WebGL canvas element (MindAR renders into this)
       const canvas = scene.renderer && scene.renderer.domElement;
+    // ===== BEGIN: camera background / canvas layering fix =====
+    try {
+    // Make sure canvas background is transparent
+    if (scene.renderer) {
+        // set clear alpha to 0 so canvas becomes transparent (three.js / A-Frame)
+        if (typeof scene.renderer.setClearColor === 'function') {
+        // make clear color fully transparent
+        scene.renderer.setClearColor(0x000000, 0);
+        }
+        // also ensure domElement style allows transparency
+        const canvasEl = scene.renderer.domElement;
+        canvasEl.style.background = 'transparent';
+        canvasEl.style.position = 'fixed';
+        canvasEl.style.top = '0';
+        canvasEl.style.left = '0';
+        canvasEl.style.width = '100%';
+        canvasEl.style.height = '100%';
+        canvasEl.style.zIndex = '1';        // canvas above the video
+        canvasEl.style.pointerEvents = 'none'; // keep our manual listeners on top (we attach to canvas anyway)
+    }
+
+    // Make page background transparent (so if video behind is transparent it won't show black)
+    document.documentElement.style.background = 'transparent';
+    document.body.style.background = 'transparent';
+
+    // Function that finds and styles the camera/video element MindAR created
+    function styleMindARVideo(v) {
+        if (!v) return;
+        v.setAttribute('playsinline', ''); // help iOS autoplay rules
+        v.style.position = 'fixed';
+        v.style.top = '0';
+        v.style.left = '0';
+        v.style.width = '100%';
+        v.style.height = '100%';
+        v.style.objectFit = 'cover';
+        v.style.zIndex = '0';              // behind the canvas
+        v.style.pointerEvents = 'none';    // don't block touches
+        console.log('styled mindar video element', v);
+        debug('camera video styled and placed behind canvas');
+    }
+
+    // Try immediate query for a video element
+    let videoEl = document.querySelector('video');
+    if (videoEl) {
+        styleMindARVideo(videoEl);
+    } else {
+        // If not found yet, observe DOM and style once it appears
+        const mo = new MutationObserver((mutations, obs) => {
+        const v = document.querySelector('video');
+        if (v) {
+            styleMindARVideo(v);
+            obs.disconnect();
+        }
+        });
+        mo.observe(document.body, { childList: true, subtree: true });
+        // Safety fallback after 2s: log if no video appeared
+        setTimeout(() => {
+        if (!document.querySelector('video')) {
+            console.warn('No <video> element found — MindAR may be rendering camera directly into WebGL. Canvas must be transparent for video to show.');
+            debug('no video element found — canvas made transparent; if still black, check camera permissions & HTTPS');
+        }
+        }, 2000);
+    }
+    } catch (err) {
+    console.warn('background setup error', err);
+    debug('background setup error: ' + err);
+    }
+    // ===== END: camera background / canvas layering fix =====
+
+
       if (!canvas) {
         debug('ERROR: renderer.domElement not found');
         return;
