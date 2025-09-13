@@ -37,17 +37,23 @@
   
     scene.addEventListener('loaded', () => {
       const btn = document.querySelector("#saveContactBtn");
+      const status = document.querySelector("#status");
+      
+      // Show if button was found
+      if (btn) {
+        status.setAttribute("value", "Button found - Try tapping");
+      } else {
+        status.setAttribute("value", "ERROR: Button not found");
+        return;
+      }
   
       function triggerDownload() {
-        console.log("Button clicked - triggering download!"); // ADDED: Better logging
+        status.setAttribute("value", "Download triggered!");
         
         // Visual feedback: change color
         btn.setAttribute("color", "green");
   
-        // Optional: small scale animation
-        btn.setAttribute("animation", "property: scale; to: 1.2 1.2 1; dur: 100; dir: alternate; loop: 1");
-  
-        // CHANGED: Create vCard data directly instead of loading file
+        // Create vCard data
         const vCardData = `BEGIN:VCARD
 VERSION:3.0
 FN:Your Name
@@ -67,31 +73,33 @@ END:VCARD`;
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
   
-        // Reset color after short delay
+        // Reset after delay
         setTimeout(() => {
           btn.setAttribute("color", "blue");
-        }, 200);
+          status.setAttribute("value", "Ready - Tap button again");
+        }, 3000);
       }
-  
-      // Click event for desktop/cursor
+
+      // Try ALL possible events
       btn.addEventListener('click', (e) => {
-        console.log("A-Frame click detected!");
-        triggerDownload();
+        status.setAttribute("value", "CLICK detected!");
+        setTimeout(triggerDownload, 500);
       });
 
-      // ADDED: Direct touch events for mobile (bypass A-Frame cursor issues)
       btn.addEventListener('touchstart', (e) => {
-        console.log("Touch start detected!");
+        status.setAttribute("value", "TOUCHSTART detected!");
         e.preventDefault();
-        e.stopPropagation();
-        btn.setAttribute("color", "orange");
+        setTimeout(triggerDownload, 500);
       });
 
       btn.addEventListener('touchend', (e) => {
-        console.log("Touch end detected!");
+        status.setAttribute("value", "TOUCHEND detected!");
         e.preventDefault();
-        e.stopPropagation();
-        triggerDownload();
+      });
+
+      // Test if ANY touch is detected on scene
+      scene.addEventListener('touchstart', (e) => {
+        status.setAttribute("value", "Touch detected on scene");
       });
     });
   </script>
