@@ -26,7 +26,7 @@
                 position="0 -0.6 0" 
                 width="1" height="0.3" 
                 color="blue" 
-                text="value: Save Contact2; align: center; color: white">
+                text="value: Save Contact; align: center; color: white">
         </a-plane>
       </a-entity>
     </a-scene>
@@ -37,76 +37,88 @@
   
     scene.addEventListener('loaded', () => {
       const btn = document.querySelector("#saveContactBtn");
-      const status = document.querySelector("#status");
       const globalStatus = document.querySelector("#globalStatus");
       const arTarget = document.querySelector('a-entity[mindar-image-target]');
       
-      // Update global status
-      globalStatus.setAttribute("value", "Scene loaded. Point camera at target image.");
+      globalStatus.setAttribute("value", "Scene loaded");
       
-      // Listen for target found/lost
+      // Track if target is visible
+      let targetVisible = false;
+      
       if (arTarget) {
         arTarget.addEventListener('targetFound', () => {
-          globalStatus.setAttribute("value", "TARGET FOUND! You should see duck + button");
-          if (status) {
-            status.setAttribute("value", "Button ready - Try tapping");
-          }
+          globalStatus.setAttribute("value", "Target found - tap screen");
+          targetVisible = true;
         });
         
         arTarget.addEventListener('targetLost', () => {
-          globalStatus.setAttribute("value", "Target lost. Point camera at target image.");
+          globalStatus.setAttribute("value", "Target lost");
+          targetVisible = false;
         });
-      }
-      
-      // Only setup button if found
-      if (!btn) {
-        globalStatus.setAttribute("value", "ERROR: Button not found in DOM");
-        return;
       }
   
       function triggerDownload() {
-        globalStatus.setAttribute("value", "Download triggered!");
+        globalStatus.setAttribute("value", "Download starting...");
         
-        // Visual feedback: change color
-        btn.setAttribute("color", "green");
+        if (btn) {
+          btn.setAttribute("color", "green");
+        }
   
         // Create vCard data
         const vCardData = `BEGIN:VCARD
 VERSION:3.0
 FN:Your Name
-ORG:Your Company
+ORG:Your Company  
 EMAIL:your.email@example.com
 TEL:+1234567890
 END:VCARD`;
 
-        const blob = new Blob([vCardData], { type: 'text/vcard' });
-        const url = URL.createObjectURL(blob);
-        
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "contact.vcf";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        try {
+          const blob = new Blob([vCardData], { type: 'text/vcard' });
+          const url = URL.createObjectURL(blob);
+          
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "contact.vcf";
+          a.style.display = 'none';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          
+          globalStatus.setAttribute("value", "Download triggered!");
+        } catch (error) {
+          globalStatus.setAttribute("value", "Download failed");
+        }
   
         // Reset after delay
         setTimeout(() => {
-          btn.setAttribute("color", "blue");
-          globalStatus.setAttribute("value", "Ready - Point at target and tap button");
+          if (btn) {
+            btn.setAttribute("color", "blue");
+          }
+          globalStatus.setAttribute("value", "Ready - tap screen");
         }, 3000);
       }
 
-      // Button events
-      btn.addEventListener('click', (e) => {
-        globalStatus.setAttribute("value", "CLICK detected!");
-        setTimeout(triggerDownload, 500);
+      // CHANGED: Listen for ANY touch on the entire scene, not just button
+      scene.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        globalStatus.setAttribute("value", "Touch detected!");
+        
+        // Only trigger download if target is visible
+        if (targetVisible) {
+          setTimeout(() => {
+            triggerDownload();
+          }, 100);
+        }
       });
 
-      btn.addEventListener('touchstart', (e) => {
-        globalStatus.setAttribute("value", "TOUCH detected!");
-        e.preventDefault();
-        setTimeout(triggerDownload, 500);
+      // Also try click for desktop
+      scene.addEventListener('click', (e) => {
+        globalStatus.setAttribute("value", "Click detected!");
+        if (targetVisible) {
+          triggerDownload();
+        }
       });
     });
   </script>
