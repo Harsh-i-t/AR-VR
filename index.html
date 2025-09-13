@@ -1,270 +1,99 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://cdn.jsdelivr.net/npm/aframe@1.4.2/dist/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar/dist/mindar-image-aframe.prod.js"></script>
     <style>
-      body, html { 
-        margin: 0; 
-        padding: 0; 
-        overflow: hidden;
-        font-family: Arial, sans-serif;
-      }
-      
-      /* Fallback message for when AR is not working */
-      #fallback {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        text-align: center;
-        color: white;
-        background: rgba(0,0,0,0.7);
-        padding: 20px;
-        border-radius: 10px;
-        z-index: 1000;
-        display: none;
-      }
+      body, html { margin: 0; padding: 0; overflow: hidden; }
     </style>
   </head>
   <body>
-    <!-- Fallback message -->
-    <div id="fallback">
-      <h3>Camera Access Required</h3>
-      <p>Please allow camera access to experience AR</p>
-    </div>
-
-    <a-scene 
-      mindar-image="imageTargetSrc: ./target.mind; maxTrack: 1; showStats: false;" 
-      vr-mode-ui="enabled: false" 
-      device-orientation-permission-ui="enabled: false"
-      renderer="colorManagement: true;"
-      loading-screen="enabled: false">
-      
+    <a-scene mindar-image="imageTargetSrc: ./target.mind;" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       <a-assets>
-        <a-asset-item id="duck-model" src="https://cdn.jsdelivr.net/gh/KhronosGroup/glTF-Sample-Models/2.0/Duck/glTF/Duck.gltf"></a-asset-item>
+        <a-asset-item id="model" src="https://cdn.jsdelivr.net/gh/KhronosGroup/glTF-Sample-Models/2.0/Duck/glTF/Duck.gltf"></a-asset-item>
       </a-assets>
 
-      <!-- Camera with cursor for mobile interaction -->
-      <a-camera position="0 0 0">
-        <a-cursor 
-          id="cursor"
-          fuse="false" 
-          raycaster="objects: .clickable; far: 20; interval: 100;"
-          geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03"
-          material="color: white; shader: flat"
-          position="0 0 -1">
-        </a-cursor>
-      </a-camera>
+        <!-- Camera + Cursor - CHANGED: added fuse="true" for mobile -->
+        <a-camera position="0 0 0">
+            <a-cursor fuse="true" fuse-timeout="1500" raycaster="objects: .clickable"></a-cursor>
+          </a-camera>
 
-      <!-- AR Target Entity -->
-      <a-entity id="ar-target" mindar-image-target="targetIndex: 0" visible="false">
-        
-        <!-- 3D Duck Model -->
-        <a-gltf-model 
-          id="duck"
-          rotation="0 0 0" 
-          position="0 -0.2 0" 
-          scale="0.4 0.4 0.4" 
-          src="#duck-model"
-          animation__rotate="property: rotation; to: 0 360 0; dur: 8000; loop: true; easing: linear">
-        </a-gltf-model>
-        
-        <!-- Save Contact Button -->
-        <a-box 
-          id="save-contact-btn"
-          class="clickable button"
-          position="-0.4 -0.5 0" 
-          width="0.8" 
-          height="0.2" 
-          depth="0.05"
-          color="#4CAF50"
-          text="value: 📱 Save Contact; align: center; color: white; width: 8;"
-          animation__hover="property: scale; to: 1.1 1.1 1.1; startEvents: mouseenter; pauseEvents: mouseleave; dur: 150"
-          animation__click="property: scale; to: 0.95 0.95 0.95; startEvents: click; dur: 100">
-        </a-box>
-        
-        <!-- YouTube Button -->
-        <a-box 
-          id="youtube-btn"
-          class="clickable button"
-          position="0.4 -0.5 0" 
-          width="0.8" 
-          height="0.2" 
-          depth="0.05"
-          color="#FF0000"
-          text="value: ▶️ YouTube; align: center; color: white; width: 8;"
-          animation__hover="property: scale; to: 1.1 1.1 1.1; startEvents: mouseenter; pauseEvents: mouseleave; dur: 150"
-          animation__click="property: scale; to: 0.95 0.95 0.95; startEvents: click; dur: 100">
-        </a-box>
-
-        <!-- Info Panel -->
-        <a-plane 
-          position="0 0.3 -0.1"
-          width="1.5" 
-          height="0.4" 
-          color="rgba(255,255,255,0.9)"
-          text="value: John Doe\nSoftware Developer\njohn@example.com\n+1 (555) 123-4567; align: center; color: black; width: 6;">
+      <a-entity mindar-image-target="targetIndex: 0">
+        <a-gltf-model rotation="0 0 0 " position="0 -0.25 0" scale="0.5 0.5 0.5" src="#model"></a-gltf-model>
+        <!-- Button -->
+        <a-plane class="clickable" 
+                id="saveContactBtn"
+                position="0 -0.6 0" 
+                width="1" height="0.3" 
+                color="blue" 
+                text="value: Save Contact; align: center; color: white">
         </a-plane>
-
       </a-entity>
     </a-scene>
-
-    <script>
-      // vCard data
-      const vCardData = `BEGIN:VCARD
+  </body>
+  
+  <script>
+    const scene = document.querySelector('a-scene');
+  
+    scene.addEventListener('loaded', () => {
+      const btn = document.querySelector("#saveContactBtn");
+  
+      function triggerDownload() {
+        console.log("Button clicked - triggering download!"); // ADDED: Better logging
+        
+        // Visual feedback: change color
+        btn.setAttribute("color", "green");
+  
+        // Optional: small scale animation
+        btn.setAttribute("animation", "property: scale; to: 1.2 1.2 1; dur: 100; dir: alternate; loop: 1");
+  
+        // CHANGED: Create vCard data directly instead of loading file
+        const vCardData = `BEGIN:VCARD
 VERSION:3.0
-FN:John Doe
-ORG:Tech Solutions Inc.
-TITLE:Software Developer
-EMAIL:john@example.com
-TEL:+1-555-123-4567
-URL:https://johndoe.dev
-ADR:;;123 Tech Street;San Francisco;CA;94105;USA
-NOTE:Full Stack Developer specializing in AR/VR experiences
+FN:Your Name
+ORG:Your Company
+EMAIL:your.email@example.com
+TEL:+1234567890
 END:VCARD`;
 
-      // Wait for scene to load
-      document.querySelector('a-scene').addEventListener('loaded', function() {
-        console.log('A-Frame scene loaded');
+        const blob = new Blob([vCardData], { type: 'text/vcard' });
+        const url = URL.createObjectURL(blob);
         
-        // Get elements
-        const saveContactBtn = document.querySelector('#save-contact-btn');
-        const youtubeBtn = document.querySelector('#youtube-btn');
-        const arTarget = document.querySelector('#ar-target');
-        
-        // Handle AR target found/lost
-        arTarget.addEventListener('targetFound', () => {
-          console.log('AR target found');
-          arTarget.setAttribute('visible', true);
-        });
-        
-        arTarget.addEventListener('targetLost', () => {
-          console.log('AR target lost');
-          arTarget.setAttribute('visible', false);
-        });
-
-        // Save Contact functionality
-        function saveContact() {
-          console.log('Save contact triggered');
-          
-          // Visual feedback
-          saveContactBtn.setAttribute('color', '#45a049');
-          saveContactBtn.emit('click');
-          
-          try {
-            // Create blob from vCard data
-            const blob = new Blob([vCardData], { type: 'text/vcard;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            
-            // Create temporary link
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'contact.vcf';
-            link.style.display = 'none';
-            
-            // Trigger download
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            // Clean up
-            setTimeout(() => {
-              URL.revokeObjectURL(url);
-              saveContactBtn.setAttribute('color', '#4CAF50');
-            }, 1000);
-            
-            console.log('vCard download triggered');
-            
-          } catch (error) {
-            console.error('Error saving contact:', error);
-            
-            // Fallback: copy to clipboard
-            if (navigator.clipboard) {
-              navigator.clipboard.writeText(vCardData).then(() => {
-                alert('Contact info copied to clipboard!');
-              }).catch(() => {
-                alert('Please save manually:\n' + vCardData);
-              });
-            } else {
-              alert('Please save manually:\n' + vCardData);
-            }
-          }
-        }
-
-        // YouTube redirect functionality
-        function openYouTube() {
-          console.log('YouTube button triggered');
-          
-          // Visual feedback
-          youtubeBtn.setAttribute('color', '#cc0000');
-          youtubeBtn.emit('click');
-          
-          // Open YouTube (replace with your channel URL)
-          const youtubeUrl = 'https://www.youtube.com/@johndoedev';
-          window.open(youtubeUrl, '_blank');
-          
-          // Reset color
-          setTimeout(() => {
-            youtubeBtn.setAttribute('color', '#FF0000');
-          }, 500);
-        }
-
-        // Event listeners for Save Contact button
-        saveContactBtn.addEventListener('click', saveContact);
-        saveContactBtn.addEventListener('touchend', function(e) {
-          e.preventDefault();
-          saveContact();
-        });
-        
-        // Event listeners for YouTube button  
-        youtubeBtn.addEventListener('click', openYouTube);
-        youtubeBtn.addEventListener('touchend', function(e) {
-          e.preventDefault();
-          openYouTube();
-        });
-
-        // Cursor events for better mobile interaction
-        const cursor = document.querySelector('#cursor');
-        
-        cursor.addEventListener('raycaster-intersected', function(e) {
-          const intersectedEl = e.detail.el;
-          if (intersectedEl.classList.contains('button')) {
-            intersectedEl.emit('mouseenter');
-          }
-        });
-        
-        cursor.addEventListener('raycaster-intersected-cleared', function(e) {
-          const clearedEl = e.detail.el;
-          if (clearedEl && clearedEl.classList.contains('button')) {
-            clearedEl.emit('mouseleave');
-          }
-        });
-
-        console.log('Event listeners attached');
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "contact.vcf";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+  
+        // Reset color after short delay
+        setTimeout(() => {
+          btn.setAttribute("color", "blue");
+        }, 200);
+      }
+  
+      // CHANGED: Use A-Frame's click event instead of DOM click
+      btn.addEventListener('click', (e) => {
+        console.log("A-Frame click detected!");
+        triggerDownload();
       });
 
-      // Handle camera permissions and errors
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then(() => {
-          console.log('Camera access granted');
-          document.querySelector('#fallback').style.display = 'none';
-        })
-        .catch((error) => {
-          console.error('Camera access denied:', error);
-          document.querySelector('#fallback').style.display = 'block';
-        });
+      // ADDED: Also listen for fuse events (when cursor hovers long enough)
+      btn.addEventListener('fusing', () => {
+        btn.setAttribute("color", "orange");
+        console.log("Fusing started...");
+      });
 
-      // Add touch event handling for better mobile support
-      document.addEventListener('touchstart', function(e) {
-        // Prevent default touch behavior that might interfere
-        if (e.target.closest('.clickable')) {
-          e.preventDefault();
-        }
-      }, { passive: false });
+      btn.addEventListener('fuse', () => {
+        console.log("Fuse completed!");
+        triggerDownload();
+      });
 
-    </script>
-  </body>
-</html>
+      btn.addEventListener('mouseleave', () => {
+        btn.setAttribute("color", "blue");
+      });
+    });
+  </script>
+  
+  </html>
