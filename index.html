@@ -17,7 +17,26 @@
 
       <a-entity mindar-image-target="targetIndex: 0">
         <a-gltf-model rotation="0 0 0 " position="0 -0.25 0" scale="0.5 0.5 0.5" src="#model"></a-gltf-model>
+        <!-- Button -->
+        <a-plane id="saveContactBtn" 
+                position="0 -0.5 0" 
+                width="1" height="0.3" 
+                color="blue" 
+                text="value: Save Contact; align: center; color: white">
+        </a-plane>
       </a-entity>
     </a-scene>
   </body>
 </html>
+
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const btn = document.querySelector("#saveContactBtn");
+      btn.addEventListener("click", () => {
+        window.location.href = "mycontact.vcf";
+      });
+    });
+  </script>
+  
