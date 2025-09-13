@@ -73,25 +73,25 @@ END:VCARD`;
         }, 200);
       }
   
-      // CHANGED: Use A-Frame's click event instead of DOM click
+      // Click event for desktop/cursor
       btn.addEventListener('click', (e) => {
         console.log("A-Frame click detected!");
         triggerDownload();
       });
 
-      // ADDED: Also listen for fuse events (when cursor hovers long enough)
-      btn.addEventListener('fusing', () => {
+      // ADDED: Direct touch events for mobile (bypass A-Frame cursor issues)
+      btn.addEventListener('touchstart', (e) => {
+        console.log("Touch start detected!");
+        e.preventDefault();
+        e.stopPropagation();
         btn.setAttribute("color", "orange");
-        console.log("Fusing started...");
       });
 
-      btn.addEventListener('fuse', () => {
-        console.log("Fuse completed!");
+      btn.addEventListener('touchend', (e) => {
+        console.log("Touch end detected!");
+        e.preventDefault();
+        e.stopPropagation();
         triggerDownload();
-      });
-
-      btn.addEventListener('mouseleave', () => {
-        btn.setAttribute("color", "blue");
       });
     });
   </script>
