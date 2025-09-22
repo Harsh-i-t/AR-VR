@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>MindAR Two Scene All Models</title>
+		<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+		<style>
+			body,
+			html {
+				margin: 0;
+				overflow: hidden;
+				height: 100%;
+				background: black;
+			}
+			#toggleBtn {
+				position: absolute;
+				top: 20px;
+				left: 20px;
+				padding: 8px 16px;
+				background: #1976d2;
+				color: white;
+				border: none;
+				border-radius: 6px;
+				cursor: pointer;
+				z-index: 999;
+			}
+		</style>
+	</head>
+	<body>
+		<button id="toggleBtn">Switch Scene</button>
+
+		<a-scene
+			id="scene"
+			mindar-image="imageTargetSrc: ./targets.mind; autoStart: false"
+			embedded
+			color-space="sRGB"
+			renderer="colorManagement: true, physicallyCorrectLights"
+			vr-mode-ui="enabled: false"
+			device-orientation-permission-ui="enabled: false">
+			<!-- ASSETS -->
+			<a-assets>
+				<a-asset-item id="tokyo" src="./models/building_no_19_form_tokyo_otemachi_building_pack.glb"></a-asset-item>
+				<a-asset-item id="statueModel" src="./models/statue_of_liberty_2.glb"></a-asset-item>
+				<a-asset-item id="delivery_van" src="./models/delivery_van.glb"></a-asset-item>
+				<a-asset-item id="youtube_icon" src="./models/youtube_icon.glb"></a-asset-item>
+				<a-asset-item id="linked_icon" src="./models/linked_icon.glb"></a-asset-item>
+				<img id="cardTexture" src="./models/Card1_Front.jpg" />
+				<video id="video" src="./models/video.mp4" loop muted playsinline webkit-playsinline></video>
+			</a-assets>
+
+			<!-- PREVIEW CAMERA -->
+			<a-entity id="previewCam" position="0 0 5" camera look-controls></a-entity>
+
+			<!-- PREVIEW MODELS (static, for adjustment) -->
+			<a-entity id="previewModels">
+				<a-gltf-model src="#tokyo" scale="0.005 0.005 0.005" position="-1.6 0 -3" rotation="0 -30 0"></a-gltf-model>
+				<a-gltf-model
+					src="#statueModel"
+					scale="0.03 0.03 0.03"
+					position="-1.5 -1.1 -2.4"
+					rotation="0 -80 0"></a-gltf-model>
+				<a-gltf-model
+					src="#delivery_van"
+					scale="0.002 0.002 0.002"
+					position="1.6 0 -2.4"
+					rotation="0 170 0"></a-gltf-model>
+				<a-gltf-model src="#youtube_icon" scale="0.2 0.2 0.2" position="0.1 0 -1.1" rotation="-80 0 0"></a-gltf-model>
+				<a-gltf-model src="#linked_icon" scale=".2 .2 .2" position="-0.03 .002 -0.1" rotation="-80 0 0"></a-gltf-model>
+				<a-plane src="#cardTexture" height="1" width="2.3" position="0.2 0.25 -3.5" rotation="-70 0 0"> </a-plane>
+				<a-plane src="#video" height="1" width="2" position="0.16 .9 -3" rotation="-10 0 0"> </a-plane>
+			</a-entity>
+
+			<!-- AR CAMERA -->
+			<a-camera id="arCam" position="0 0 0" visible="false"></a-camera>
+
+			<!-- AR MODELS (anchored to target) -->
+			<a-entity id="arModels" mindar-image-target="targetIndex: 0" visible="false">
+				<a-gltf-model src="#tokyo" scale="0.005 0.005 0.005" position="-1.6 0 -3" rotation="0 -30 0"></a-gltf-model>
+				<a-gltf-model
+					src="#statueModel"
+					scale="0.03 0.03 0.03"
+					position="-1.5 -1.1 -2.4"
+					rotation="0 -80 0"></a-gltf-model>
+				<a-gltf-model
+					src="#delivery_van"
+					scale="0.002 0.002 0.002"
+					position="1.6 0 -2.4"
+					rotation="0 170 0"></a-gltf-model>
+				<a-gltf-model src="#youtube_icon" scale="0.2 0.2 0.2" position="0.1 0 -1.1" rotation="-80 0 0"></a-gltf-model>
+				<a-gltf-model src="#linked_icon" scale=".2 .2 .2" position="-0.03 .002 -0.1" rotation="-80 0 0"></a-gltf-model>
+			</a-entity>
+		</a-scene>
+
+		<script>
+			const sceneEl = document.querySelector("#scene");
+			const arCam = document.querySelector("#arCam");
+			const previewCam = document.querySelector("#previewCam");
+			const previewModels = document.querySelector("#previewModels");
+			const arModels = document.querySelector("#arModels");
+			const toggleBtn = document.getElementById("toggleBtn");
+			const videoEl = document.querySelector("#video");
+
+			let mindarSystem = null;
+			let inPreview = true;
+
+			// wait until scene + systems are loaded
+			sceneEl.addEventListener("loaded", () => {
+				mindarSystem = sceneEl.systems["mindar-image"];
+				console.log("✅ MindAR system ready");
+				videoEl.play();
+
+			});
+
+			toggleBtn.addEventListener("click", async () => {
+				if (!mindarSystem) {
+					console.warn("MindAR not ready!");
+					return;
+				}
+
+				if (inPreview) {
+					// Switch to AR
+					previewCam.setAttribute("visible", "false");
+					previewModels.setAttribute("visible", "false");
+
+					arCam.setAttribute("visible", "true");
+					arModels.setAttribute("visible", "true");
+
+					await mindarSystem.start();
+					console.log("▶️ AR started");
+				} else {
+					// Back to Preview
+					mindarSystem.stop();
+
+					previewCam.setAttribute("visible", "true");
+					previewModels.setAttribute("visible", "true");
+
+					arCam.setAttribute("visible", "false");
+					arModels.setAttribute("visible", "false");
+
+					console.log("⏹️ AR stopped, back to Preview");
+				}
+				inPreview = !inPreview;
+			});
+		</script>
+	</body>
+</html>

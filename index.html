@@ -1,332 +1,435 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-<head>
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta charset="utf-8">
-  <title>MindAR + A-Frame: touch raycast + vCard</title>
+	<head>
+		<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+		<meta charset="utf-8" />
+		<title>MindAR + A-Frame: touch raycast + vCard</title>
 
-  <!-- A-Frame + MindAR -->
-  <script src="https://cdn.jsdelivr.net/npm/aframe@1.4.2/dist/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar/dist/mindar-image-aframe.prod.js"></script>
+		<!-- A-Frame + MindAR -->
+		<script src="https://cdn.jsdelivr.net/npm/aframe@1.4.2/dist/aframe.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/mind-ar/dist/mindar-image-aframe.prod.js"></script>
 
-  <style>
-    html,body { margin:0; padding:0; height:100%; background:#000; }
-    a-scene { width:100%; height:100%; touch-action:none; } /* prevent browser gestures */
-    #debug { position: fixed; left: 8px; bottom: 8px; z-index: 9999; color: #fff; font-family: monospace; background: rgba(0,0,0,0.4); padding:6px 8px; border-radius:6px; max-width: 45vw; font-size:12px; }
-  </style>
-</head>
-<body>
-  <div id="debug">init...</div>
+		<style>
+			html,
+			body {
+				margin: 0;
+				padding: 0;
+				height: 100%;
+				background: #000;
+			}
+			a-scene {
+				width: 100%;
+				height: 100%;
+				touch-action: none;
+			} /* prevent browser gestures */
+			#debug {
+				position: fixed;
+				left: 8px;
+				bottom: 8px;
+				z-index: 9999;
+				color: #fff;
+				font-family: monospace;
+				background: rgba(0, 0, 0, 0.4);
+				padding: 6px 8px;
+				border-radius: 6px;
+				max-width: 45vw;
+				font-size: 12px;
+			}
+		</style>
+	</head>
 
-  <a-scene mindar-image="imageTargetSrc: ./target.mind;" embedded renderer="alpha: true" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
-    <a-assets>
-      <a-asset-item id="model" src="https://cdn.jsdelivr.net/gh/KhronosGroup/glTF-Sample-Models/2.0/Duck/glTF/Duck.gltf"></a-asset-item>
-    </a-assets>
+	<body>
+		<div id="debug">init...</div>
 
-    <!-- camera WITHOUT a-cursor -->
-    <a-camera position="0 0 0"></a-camera>
+		<a-scene
+			mindar-image="imageTargetSrc: ./target.mind;"
+			embedded
+			renderer="alpha: true"
+			vr-mode-ui="enabled: false"
+			device-orientation-permission-ui="enabled: false">
+			<a-assets>
+				<a-asset-item id="tokyo" src="./models/building_no_19_form_tokyo_otemachi_building_pack.glb"></a-asset-item>
+				<a-asset-item id="statueModel" src="./models/statue_of_liberty_2.glb"></a-asset-item>
+				<a-asset-item id="delivery_van" src="./models/delivery_van.glb"></a-asset-item>
+				<a-asset-item id="youtube_icon" src="./models/youtube_icon.glb"></a-asset-item>
+				<a-asset-item id="linked_icon" src="./models/linked_icon.glb"></a-asset-item>
+				<img id="cardTexture" src="./models/Card1_Front.jpg" />
+				<video id="video" src="./models/video.mp4" loop playsinline webkit-playsinline></video>
+			</a-assets>
 
-    <a-entity mindar-image-target="targetIndex: 0">
-      <a-gltf-model id="duck" rotation="0 0 0" position="0 -0.25 0" scale="0.5 0.5 0.5" src="#model"></a-gltf-model>
+			<a-camera position="0 0 0"></a-camera>
 
-      <!-- Button entity (visible) -->
-      <a-plane id="saveContactBtn"
-               class="clickable"
-               position="0 -0.6 0"
-               width="1" height="0.3"
-               material="color: #1565C0; metalness: 0.1; roughness: 0.6"
-               geometry="primitive: plane"
-               text="value: Save Contact; align: center; color: white; wrapCount: 20">
-      </a-plane>
+			<a-entity mindar-image-target="targetIndex: 0">
+				<a-gltf-model src="#tokyo" scale="0.005 0.005 0.005" position="-1.6 0 -3" rotation="0 -30 0"></a-gltf-model>
+				<a-gltf-model
+					src="#statueModel"
+					scale="0.03 0.03 0.03"
+					position="-1.5 -1.1 -2.4"
+					rotation="0 -80 0"></a-gltf-model>
+				<a-gltf-model
+					src="#delivery_van"
+					scale="0.002 0.002 0.002"
+					position="1.6 0 -2.4"
+					rotation="0 170 0"></a-gltf-model>
+				<a-gltf-model src="#youtube_icon" scale="0.2 0.2 0.2" position="0.1 0 -1.1" rotation="-80 0 0"></a-gltf-model>
+				<a-gltf-model src="#linked_icon" scale=".2 .2 .2" position="-0.03 .002 -0.1" rotation="-80 0 0"></a-gltf-model>
+				<a-plane src="#cardTexture" height="1" width="2.3" position="0.2 0.25 -3.5" rotation="-70 0 0"> </a-plane>
+				<a-plane src="#video" height="1" width="2" position="0.16 .9 -3" rotation="-10 0 0"> </a-plane>
 
-      <!-- Example: another button (redirect) -->
-      <a-plane id="ytBtn"
-               class="clickable"
-               position="0 -1.0 0"
-               width="1" height="0.3"
-               material="color: #E53935"
-               text="value: Open YouTube; align: center; color: white; wrapCount: 20">
-      </a-plane>
-    </a-entity>
-  </a-scene>
+				<!-- Button entity (visible) -->
+				<!-- <a-plane
+					id="saveContactBtn"
+					class="clickable"
+					position="0 -0.6 0"
+					width="1"
+					height="0.3"
+					material="color: #1565C0; metalness: 0.1; roughness: 0.6"
+					geometry="primitive: plane"
+					text="value: Save Contact; align: center; color: white; wrapCount: 20">
+				</a-plane> -->
 
-  <script>
-    (function(){
-      const debugEl = document.getElementById('debug');
-      function debug(msg){ console.log(msg); debugEl.innerText = (new Date()).toLocaleTimeString() + ' — ' + msg; }
-    
-      const scene = document.querySelector('a-scene');
-    
-      // Wait for scene to be ready and renderer canvas to exist
-      scene.addEventListener('renderstart', () => {
-        debug('renderstart fired, setting up custom raycast handlers');
-    
-        // Get the WebGL canvas element (MindAR renders into this)
-        const canvas = scene.renderer && scene.renderer.domElement;
-    
-        // ===== BEGIN: camera background / canvas layering fix (CORRECTED) =====
-        try {
-          if (!canvas) {
-            debug('WARNING: canvas not ready yet for styling — will try later');
-          } else {
-            // Make sure canvas background is transparent (three.js / A-Frame)
-            if (scene.renderer && typeof scene.renderer.setClearColor === 'function') {
-              scene.renderer.setClearColor(0x000000, 0); // transparent clear color
-            }
-            // style canvas so it fills the screen and can receive input
-            canvas.style.background = 'transparent';
-            canvas.style.position = 'fixed';
-            canvas.style.top = '0';
-            canvas.style.left = '0';
-            canvas.style.width = '100%';
-            canvas.style.height = '100%';
-            canvas.style.zIndex = '2';          // put canvas above video
-            canvas.style.touchAction = 'none';  // prevent browser gestures
-            canvas.style.pointerEvents = 'auto';// IMPORTANT: canvas must receive pointer/touch events
-            debug('canvas styled: transparent + pointerEvents=auto');
-          }
-    
-          // Make page background transparent
-          document.documentElement.style.background = 'transparent';
-          document.body.style.background = 'transparent';
-    
-          // Helper to style MindAR-created video element so it is behind canvas and doesn't intercept touches
-          function styleMindARVideo(v) {
-            if (!v) return;
-            v.setAttribute('playsinline', ''); // help iOS autoplay rules
-            v.style.position = 'fixed';
-            v.style.top = '0';
-            v.style.left = '0';
-            v.style.width = '100%';
-            v.style.height = '100%';
-            v.style.objectFit = 'cover';
-            v.style.zIndex = '1';            // behind the canvas (canvas zIndex = 2)
-            v.style.pointerEvents = 'none';  // IMPORTANT: video must NOT intercept touches
-            v.style.background = 'black';    // fallback in case camera isn't available
-            console.log('styled mindar video element', v);
-            debug('camera video styled and placed behind canvas');
-          }
-    
-          // If video exists now, style it; otherwise observe DOM for insertion
-          let videoEl = document.querySelector('video');
-          if (videoEl) {
-            styleMindARVideo(videoEl);
-          } else {
-            // Observe DOM for a video being added and style it once found
-            const mo = new MutationObserver((mutations, obs) => {
-              const v = document.querySelector('video');
-              if (v) {
-                styleMindARVideo(v);
-                obs.disconnect();
-              }
-            });
-            mo.observe(document.body, { childList: true, subtree: true });
-    
-            // Safety fallback after 2s
-            setTimeout(() => {
-              if (!document.querySelector('video')) {
-                // MindAR might be rendering directly into GL; canvas transparency is still needed
-                debug('no <video> element found yet — using transparent canvas (MindAR may render directly into WebGL).');
-              }
-            }, 2000);
-          }
-    
-          // Ensure debug overlay doesn't block interactions
-          if (debugEl) {
-            debugEl.style.zIndex = '99999';
-            debugEl.style.pointerEvents = 'none';
-          }
-        } catch (err) {
-          console.warn('background setup error', err);
-          debug('background setup error: ' + err);
-        }
-        // ===== END: camera background / canvas layering fix =====
-    
-    
-        if (!canvas) {
-          debug('ERROR: renderer.domElement not found');
-          return;
-        }
-    
-        // Ensure canvas will receive touches (prevent browser default gestures)
-        canvas.style.touchAction = 'none';
-    
-        // Button entities
-        const saveBtn = document.querySelector('#saveContactBtn');
-        const ytBtn   = document.querySelector('#ytBtn');
-    
-        // Small helper: get mesh object3D for an A-Frame entity
-        function getThreeMesh(el) {
-          if (!el) return null;
-          return el.getObject3D('mesh') || el.getObject3D('group') || null;
-        }
-    
-        // Build list of clickable items with their A-Frame el and corresponding mesh
-        const clickable = [];
-        [saveBtn, ytBtn].forEach(el => {
-          if (!el) return;
-          const mesh = getThreeMesh(el);
-          if (mesh) {
-            clickable.push({el, mesh});
-          } else {
-            // sometimes model/mesh is not immediately available; listen and push later
-            el.addEventListener('model-loaded', () => {
-              const lateMesh = getThreeMesh(el);
-              if (lateMesh) clickable.push({el, mesh: lateMesh});
-              debug('model-loaded for ' + el.id + ', mesh now available');
-            });
-          }
-        });
-    
-        // Raycaster and reusable vectors
-        const THREE = AFRAME.THREE;
-        const raycaster = new THREE.Raycaster();
-        const touchPoint = new THREE.Vector2();
-    
-        // Convert screen (clientX/clientY) to NDC normalized device coordinates [-1,1]
-        function toNDC(x, y) {
-          const rect = canvas.getBoundingClientRect();
-          const nx = ((x - rect.left) / rect.width) * 2 - 1;
-          const ny = -((y - rect.top) / rect.height) * 2 + 1;
-          return { nx, ny };
-        }
-    
-        // Resolve which clickable entity is hit by the ray; returns the first matched element
-        function getIntersectedEntity(nx, ny) {
-          // set ray from camera
-          raycaster.setFromCamera({ x: nx, y: ny }, scene.camera);
-          // check each mesh
-          for (let i = 0; i < clickable.length; i++) {
-            try {
-              const { el, mesh } = clickable[i];
-              if (!mesh) continue;
-              const hits = raycaster.intersectObject(mesh, true);
-              if (hits && hits.length > 0) {
-                return { el, hits };
-              }
-            } catch (err) {
-              console.warn('raycast error', err);
-            }
-          }
-          return null;
-        }
-    
-        // Download vCard with multiple fallbacks (desktop/mobile/iOS)
-        function downloadVCard(vcardString, filename = 'contact.vcf') {
-          debug('attempting vCard download');
-          const blob = new Blob([vcardString], { type: 'text/vcard;charset=utf-8' });
-          const url = URL.createObjectURL(blob);
-    
-          // 1) If Web Share with files is available (Android Chrome and some browsers)
-          if (navigator.canShare && navigator.canShare({ files: [new File([blob], filename, { type: blob.type })] })) {
-            try {
-              const file = new File([blob], filename, { type: blob.type });
-              navigator.share({ files: [file], title: 'Contact', text: 'Save contact' })
-                .then(() => { debug('shared via navigator.share'); URL.revokeObjectURL(url); })
-                .catch(err => { debug('share failed: ' + err); fallbackDownload(); });
-              return;
-            } catch (e) {
-              console.warn('share exception', e);
-            }
-          }
-    
-          // 2) Standard anchor download (works on many desktop/mobile)
-          function fallbackDownload() {
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-    
-            // For iOS Safari, anchor click may not download — open in new tab instead
-            const isiOS = /iP(ad|hone|od)/i.test(navigator.userAgent);
-            if (isiOS) {
-              // open in new window/tab so user can long-press and save the file
-              window.open(url, '_blank');
-              setTimeout(() => { URL.revokeObjectURL(url); }, 2000);
-              debug('opened vCard in new tab for iOS fallback');
-              return;
-            }
-    
-            // General case: programmatic click
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            debug('anchor click triggered for download');
-          }
-    
-          fallbackDownload();
-        }
-    
-        // The vCard content (customize as needed)
-        const vCardString = [
-          'BEGIN:VCARD',
-          'VERSION:3.0',
-          'FN:Jim Royce',
-          'ORG:LastMileNC',
-          'EMAIL:your.email@example.com',
-          'TEL:+1234567890',
-          'END:VCARD'
-        ].join('\n');
-        
-        // Visual feedback helpers
-        function flashButton(el) {
-          if (!el) return;
-          const old = (el.getAttribute('material') && el.getAttribute('material').color) || '#1565C0';
-          el.setAttribute('material', 'color: #2e7d32'); // green
-          setTimeout(() => el.setAttribute('material', 'color: ' + old), 1400);
-        }
-    
-        // Handle a hit on an element
-        function handleHit(el) {
-          debug('HIT: ' + el.id);
-          if (el.id === 'saveContactBtn') {
-            flashButton(el);
-            setTimeout(() => downloadVCard(vCardString, 'contact.vcf'), 150);
-          } else if (el.id === 'ytBtn') {
-            flashButton(el);
-            // Example redirect (open youtube)
-            window.open('https://www.youtube.com/', '_blank');
-          } else {
-            debug('unknown clickable id: ' + el.id);
-          }
-        }
-    
-        // Attach pointer / touch / click handlers to the canvas
-        function onPointerDown(e) {
-          e.preventDefault();
-          let clientX, clientY;
-          if (e.changedTouches && e.changedTouches.length > 0) {
-            clientX = e.changedTouches[0].clientX;
-            clientY = e.changedTouches[0].clientY;
-          } else {
-            clientX = e.clientX;
-            clientY = e.clientY;
-          }
-          const { nx, ny } = toNDC(clientX, clientY);
-          const hit = getIntersectedEntity(nx, ny);
-          if (hit) {
-            handleHit(hit.el);
-          } else {
-            debug('no hit at ' + clientX + ',' + clientY);
-          }
-        }
-    
-        canvas.addEventListener('touchstart', onPointerDown, { passive: false });
-        canvas.addEventListener('pointerdown', onPointerDown, { passive: false });
-        canvas.addEventListener('mousedown', onPointerDown);
-    
-        debug('setup complete — touch the screen where the button is visible (check remote console if needed)');
-      });
-    
-      // Extra: helpful message if scene didn't start (camera permission, served over HTTP etc.)
-      setTimeout(()=> {
-        if (!AFRAME.scenes || AFRAME.scenes.length === 0) return;
-        const s = AFRAME.scenes[0];
-        if (!s.isPlaying) debug('Scene not playing yet — ensure HTTPS and give camera permission');
-      }, 3000);
-    
-    })();
-    </script>
-    
-</body>
+				<!-- Example: another button (redirect) -->
+				<!-- <a-plane
+					id="ytBtn"
+					class="clickable"
+					position="0 -1.0 0"
+					width="1"
+					height="0.3"
+					material="color: #E53935"
+					text="value: Open YouTube; align: center; color: white; wrapCount: 20">
+				</a-plane> -->
+			</a-entity>
+		</a-scene>
+
+		<script>
+			(function () {
+				const debugEl = document.getElementById("debug");
+				function debug(msg) {
+					console.log(msg);
+					debugEl.innerText = new Date().toLocaleTimeString() + " — " + msg;
+				}
+
+				const scene = document.querySelector("a-scene");
+
+				// Wait for scene to be ready and renderer canvas to exist
+				scene.addEventListener("renderstart", () => {
+					debug("renderstart fired, setting up custom raycast handlers");
+
+					// Get the WebGL canvas element (MindAR renders into this)
+					const canvas = scene.renderer && scene.renderer.domElement;
+
+					// ===== BEGIN: camera background / canvas layering fix (CORRECTED) =====
+					try {
+						if (!canvas) {
+							debug("WARNING: canvas not ready yet for styling — will try later");
+						} else {
+							// Make sure canvas background is transparent (three.js / A-Frame)
+							if (scene.renderer && typeof scene.renderer.setClearColor === "function") {
+								scene.renderer.setClearColor(0x000000, 0); // transparent clear color
+							}
+							// style canvas so it fills the screen and can receive input
+							canvas.style.background = "transparent";
+							canvas.style.position = "fixed";
+							canvas.style.top = "0";
+							canvas.style.left = "0";
+							canvas.style.width = "100%";
+							canvas.style.height = "100%";
+							canvas.style.zIndex = "2"; // put canvas above video
+							canvas.style.touchAction = "none"; // prevent browser gestures
+							canvas.style.pointerEvents = "auto"; // IMPORTANT: canvas must receive pointer/touch events
+							debug("canvas styled: transparent + pointerEvents=auto");
+						}
+
+						// Make page background transparent
+						document.documentElement.style.background = "transparent";
+						document.body.style.background = "transparent";
+
+						// Helper to style MindAR-created video element so it is behind canvas and doesn't intercept touches
+						function styleMindARVideo(v) {
+							if (!v) return;
+							v.setAttribute("playsinline", ""); // help iOS autoplay rules
+							v.style.position = "fixed";
+							v.style.top = "0";
+							v.style.left = "0";
+							v.style.width = "100%";
+							v.style.height = "100%";
+							v.style.objectFit = "cover";
+							v.style.zIndex = "1"; // behind the canvas (canvas zIndex = 2)
+							v.style.pointerEvents = "none"; // IMPORTANT: video must NOT intercept touches
+							v.style.background = "black"; // fallback in case camera isn't available
+							console.log("styled mindar video element", v);
+							debug("camera video styled and placed behind canvas");
+						}
+
+						// If video exists now, style it; otherwise observe DOM for insertion
+						let videoEl = document.querySelector("video");
+						if (videoEl) {
+							styleMindARVideo(videoEl);
+						} else {
+							// Observe DOM for a video being added and style it once found
+							const mo = new MutationObserver((mutations, obs) => {
+								const v = document.querySelector("video");
+								if (v) {
+									styleMindARVideo(v);
+									obs.disconnect();
+								}
+							});
+							mo.observe(document.body, { childList: true, subtree: true });
+
+							// Safety fallback after 2s
+							setTimeout(() => {
+								if (!document.querySelector("video")) {
+									// MindAR might be rendering directly into GL; canvas transparency is still needed
+									debug(
+										"no <video> element found yet — using transparent canvas (MindAR may render directly into WebGL)."
+									);
+								}
+							}, 2000);
+						}
+
+						// Ensure debug overlay doesn't block interactions
+						if (debugEl) {
+							debugEl.style.zIndex = "99999";
+							debugEl.style.pointerEvents = "none";
+						}
+					} catch (err) {
+						console.warn("background setup error", err);
+						debug("background setup error: " + err);
+					}
+					// ===== END: camera background / canvas layering fix =====
+
+					if (!canvas) {
+						debug("ERROR: renderer.domElement not found");
+						return;
+					}
+
+					// Ensure canvas will receive touches (prevent browser default gestures)
+					canvas.style.touchAction = "none";
+
+					// Button entities
+					const saveBtn = document.querySelector("#saveContactBtn");
+					const ytBtn = document.querySelector("#ytBtn");
+
+					// Small helper: get mesh object3D for an A-Frame entity
+					function getThreeMesh(el) {
+						if (!el) return null;
+						return el.getObject3D("mesh") || el.getObject3D("group") || null;
+					}
+
+					// Build list of clickable items with their A-Frame el and corresponding mesh
+					const clickable = [];
+					[saveBtn, ytBtn].forEach((el) => {
+						if (!el) return;
+						const mesh = getThreeMesh(el);
+						if (mesh) {
+							clickable.push({ el, mesh });
+						} else {
+							// sometimes model/mesh is not immediately available; listen and push later
+							el.addEventListener("model-loaded", () => {
+								const lateMesh = getThreeMesh(el);
+								if (lateMesh) clickable.push({ el, mesh: lateMesh });
+								debug("model-loaded for " + el.id + ", mesh now available");
+							});
+						}
+					});
+
+					// Raycaster and reusable vectors
+					const THREE = AFRAME.THREE;
+					const raycaster = new THREE.Raycaster();
+					const touchPoint = new THREE.Vector2();
+
+					// Convert screen (clientX/clientY) to NDC normalized device coordinates [-1,1]
+					function toNDC(x, y) {
+						const rect = canvas.getBoundingClientRect();
+						const nx = ((x - rect.left) / rect.width) * 2 - 1;
+						const ny = -((y - rect.top) / rect.height) * 2 + 1;
+						return { nx, ny };
+					}
+
+					// Resolve which clickable entity is hit by the ray; returns the first matched element
+					function getIntersectedEntity(nx, ny) {
+						// set ray from camera
+						raycaster.setFromCamera({ x: nx, y: ny }, scene.camera);
+						// check each mesh
+						for (let i = 0; i < clickable.length; i++) {
+							try {
+								const { el, mesh } = clickable[i];
+								if (!mesh) continue;
+								const hits = raycaster.intersectObject(mesh, true);
+								if (hits && hits.length > 0) {
+									return { el, hits };
+								}
+							} catch (err) {
+								console.warn("raycast error", err);
+							}
+						}
+						return null;
+					}
+
+					// Download vCard with multiple fallbacks (desktop/mobile/iOS)
+					function downloadVCard(vcardString, filename = "contact.vcf") {
+						debug("attempting vCard download");
+						const blob = new Blob([vcardString], { type: "text/vcard;charset=utf-8" });
+						const url = URL.createObjectURL(blob);
+
+						// 1) If Web Share with files is available (Android Chrome and some browsers)
+						if (
+							navigator.canShare &&
+							navigator.canShare({ files: [new File([blob], filename, { type: blob.type })] })
+						) {
+							try {
+								const file = new File([blob], filename, { type: blob.type });
+								navigator
+									.share({ files: [file], title: "Contact", text: "Save contact" })
+									.then(() => {
+										debug("shared via navigator.share");
+										URL.revokeObjectURL(url);
+									})
+									.catch((err) => {
+										debug("share failed: " + err);
+										fallbackDownload();
+									});
+								return;
+							} catch (e) {
+								console.warn("share exception", e);
+							}
+						}
+
+						// 2) Standard anchor download (works on many desktop/mobile)
+						function fallbackDownload() {
+							const a = document.createElement("a");
+							a.href = url;
+							a.download = filename;
+
+							// For iOS Safari, anchor click may not download — open in new tab instead
+							const isiOS = /iP(ad|hone|od)/i.test(navigator.userAgent);
+							if (isiOS) {
+								// open in new window/tab so user can long-press and save the file
+								window.open(url, "_blank");
+								setTimeout(() => {
+									URL.revokeObjectURL(url);
+								}, 2000);
+								debug("opened vCard in new tab for iOS fallback");
+								return;
+							}
+
+							// General case: programmatic click
+							document.body.appendChild(a);
+							a.click();
+							document.body.removeChild(a);
+							URL.revokeObjectURL(url);
+							debug("anchor click triggered for download");
+						}
+
+						fallbackDownload();
+					}
+
+					// The vCard content (customize as needed)
+					const vCardString = [
+						"BEGIN:VCARD",
+						"VERSION:3.0",
+						"FN:Jim Royce",
+						"ORG:LastMileNC",
+						"EMAIL:your.email@example.com",
+						"TEL:+1234567890",
+						"END:VCARD",
+					].join("\n");
+
+					// Visual feedback helpers
+					function flashButton(el) {
+						if (!el) return;
+						const old = (el.getAttribute("material") && el.getAttribute("material").color) || "#1565C0";
+						el.setAttribute("material", "color: #2e7d32"); // green
+						setTimeout(() => el.setAttribute("material", "color: " + old), 1400);
+					}
+
+					// Handle a hit on an element
+					function handleHit(el) {
+						debug("HIT: " + el.id);
+						if (el.id === "saveContactBtn") {
+							flashButton(el);
+							setTimeout(() => downloadVCard(vCardString, "contact.vcf"), 150);
+						} else if (el.id === "ytBtn") {
+							flashButton(el);
+							// Example redirect (open youtube)
+							window.open("https://www.youtube.com/", "_blank");
+						} else {
+							debug("unknown clickable id: " + el.id);
+						}
+					}
+
+					// Attach pointer / touch / click handlers to the canvas
+					function onPointerDown(e) {
+						e.preventDefault();
+						let clientX, clientY;
+						if (e.changedTouches && e.changedTouches.length > 0) {
+							clientX = e.changedTouches[0].clientX;
+							clientY = e.changedTouches[0].clientY;
+						} else {
+							clientX = e.clientX;
+							clientY = e.clientY;
+						}
+						const { nx, ny } = toNDC(clientX, clientY);
+						const hit = getIntersectedEntity(nx, ny);
+						if (hit) {
+							handleHit(hit.el);
+						} else {
+							debug("no hit at " + clientX + "," + clientY);
+						}
+					}
+
+					canvas.addEventListener("touchstart", onPointerDown, { passive: false });
+					canvas.addEventListener("pointerdown", onPointerDown, { passive: false });
+					canvas.addEventListener("mousedown", onPointerDown);
+
+					debug("setup complete — touch the screen where the button is visible (check remote console if needed)");
+				});
+
+				// Extra: helpful message if scene didn't start (camera permission, served over HTTP etc.)
+				setTimeout(() => {
+					if (!AFRAME.scenes || AFRAME.scenes.length === 0) return;
+					const s = AFRAME.scenes[0];
+					if (!s.isPlaying) debug("Scene not playing yet — ensure HTTPS and give camera permission");
+				}, 3000);
+			})();
+		</script>
+
+		<script>
+			document.addEventListener("DOMContentLoaded", () => {
+				const mindarThree = new window.MINDAR.IMAGE.MindARThree({
+					container: document.body,
+					imageTargetSrc: "./targets.mind",
+					uiLoading: false,
+					uiError: false,
+					uiScanning: false, // disable scanning overlay
+				});
+			});
+		</script>
+		<script>
+			document.addEventListener("DOMContentLoaded", () => {
+				const marker = document.querySelector("[mindar-image-target]");
+				const video = document.querySelector("#video");
+
+				// When QR target is detected
+				marker.addEventListener("targetFound", () => {
+					console.log("Marker found → play video");
+					video.play().catch((err) => console.warn("Autoplay blocked:", err));
+				});
+
+				// When QR target is lost
+				marker.addEventListener("targetLost", () => {
+					console.log("Marker lost → pause video");
+					video.pause();
+				});
+			});
+			document.body.addEventListener(
+				"touchend",
+				() => {
+					const video = document.querySelector("#video");
+					video.play().catch(() => {});
+				},
+				{ once: true }
+			);
+		</script>
+	</body>
 </html>
