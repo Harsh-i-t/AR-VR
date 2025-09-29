@@ -42,7 +42,7 @@
 		<div id="debug">init...</div>
 
 		<a-scene
-			mindar-image="imageTargetSrc: ./target.mind;"
+			mindar-image="imageTargetSrc: ./target.mind; filterMinCF: 0.001; filterBeta: 0.1;"
 			embedded
 			renderer="alpha: true"
 			vr-mode-ui="enabled: false"
@@ -405,6 +405,7 @@
 				});
 			});
 		</script>
+
 		<script>
 			document.addEventListener("DOMContentLoaded", () => {
 				const marker = document.querySelector("[mindar-image-target]");
